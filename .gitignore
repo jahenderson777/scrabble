@@ -1,0 +1,55 @@
+/out/
+/public/js/compiled/
+/public/js/cljs-runtime/
+/target/
+/*-init.clj
+/*.log
+
+# Leiningen
+/.lein-*
+/.nrepl-port
+
+# Node.js dependencies
+/node_modules/
+
+# shadow-cljs cache, port files
+/.shadow-cljs/
+
+# IntelliJ
+.idea
+*.iml
+
+# Cypress
+cypress/videos
+cypress/screenshots
+cypress/fixtures/audio/mic.wav
+
+.calva/output-window/
+.classpath
+.clj-kondo/.cache
+.cpcache
+.eastwood
+.factorypath
+.hg/
+.hgignore
+.java-version
+.lein-*
+.lsp/.cache
+.lsp/sqlite.db
+.nrepl-history
+.nrepl-port
+.project
+.rebel_readline_history
+.settings
+.socket-repl-port
+.sw*
+.vscode
+*.class
+*.jar
+*.swp
+*~
+/checkouts
+/classes
+/target
+.DS_Store
+package-lock.json

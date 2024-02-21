@@ -1,0 +1,249 @@
+.brad3 {border-radius: 3px}
+.brad6 {border-radius: 6px}
+.brad8 {border-radius: 8px}
+.brad12 {border-radius: 12px}
+.brad20 {border-radius: 20px}
+.bradp50 {border-radius: 50%}
+
+.b1 {border: 1px solid #EFEFEF}
+.bt1 {border-top: 1px solid #EFEFEF}
+.bb1 {border-bottom: 1px solid #EFEFEF}
+.bl1 {border-left: 1px solid #EFEFEF}
+.br1 {border-right: 1px solid #EFEFEF}
+
+.b2 {border: 2px solid #EFEFEF}
+.b5 {border: 5px solid #EFEFEF}
+.bt2 {border-top: 2px solid #EFEFEF}
+.bb2 {border-bottom: 2px solid #EFEFEF}
+.bl2 {border-left: 2px solid #EFEFEF}
+.br2 {border-right: 2px solid #EFEFEF}
+
+.b {font-weight: 800}
+.sb {font-weight: 600}
+
+.fs8 {font-size: 8px}
+.fs10 {font-size: 10px}
+.fs11 {font-size: 11px}
+.fs12 {font-size: 12px}
+.fs14 {font-size: 14px}
+.fs16 {font-size: 16px}
+.fs18 {font-size: 18px}
+.fs20 {font-size: 20px}
+.fs24 {font-size: 24px}
+.fs30 {font-size: 30px}
+.fs36 {font-size: 36px}
+.fs48 {font-size: 48px}
+.fs60 {font-size: 60px}
+.fs72 {font-size: 72px}
+
+.fl {float: left}
+.fr {float: right}
+
+.f1 {font-family: 'Open Sans', sans-serif}
+.f2 {font-family: 'Nunito', sans-serif;
+     font-weight: 300
+    }
+.fm {font-family: 'Space Mono', monospace}
+.tac {text-align: center}
+.tal {text-align: left}
+.tar {text-align: right}
+
+.abs {position: absolute}
+.rel {position: relative}
+.fixed {position: fixed}
+.sticky {position: sticky}
+
+.lp50 {left: 50%}
+
+.no-wrap {white-space: nowrap}
+.wrap {white-space: normal}
+
+.flexc {display: flex; flex-direction: column}
+.flexr {display: flex; flex-direction: row}
+.inline-flexc {display: inline-flex; flex-direction: column}
+.inline-flexr {display: inline-flex; flex-direction: row}
+.inline {display: inline-block}
+.grid {display: grid}
+.block {display: block}
+
+.fdr {flex-direction: row}
+.fg1 {flex-grow: 1}
+.fg2 {flex-grow: 2}
+.fg3 {flex-grow: 3}
+.fg4 {flex-grow: 4}
+.fwrap {flex-wrap: wrap}
+
+.ais {align-items: stretch}
+.aic {align-items: center}
+.asc {align-self: center}
+.ass {align-self: start}
+.ase {align-self: end}
+
+.jcc {justify-content: center}
+.jcsb {justify-content: space-between}
+.jcsa {justify-content: space-around}
+
+.tdn {text-decoration: none}
+.tdu {text-decoration: underline}
+.ttu {text-transform: uppercase}
+.ttc {text-transform: capitalize}
+.fsi {font-style: italic}
+
+.oh {overflow: hidden}
+.oa {overflow: auto}
+.no-overscroll {overscroll-behavior: none}
+
+.pointer {cursor: pointer}
+.resize {cursor: ew-resize}
+
+.hp100 {height: 100%}
+.wp100 {width: 100%}
+.wp50 {width: 50%}
+
+.vm {vertical-align: middle}
+.vt {vertical-align: top}
+
+.ma {margin: auto}
+.mta {margin-top: auto}
+.mba {margin-bottom: auto}
+.mla {margin-left: auto}
+.mra {margin-right: auto}
+
+.hov-bg-lav:hover { background-color: #6246EA}
+.hov-o100:hover {opacity: 1}
+.hov-bc-lav:hover { border-color: #6246EA}
+.checked-o100:checked {opacity:1}
+
+.o0 {opacity: 0}
+.o25 {opacity: 0.25}
+.o50 {opacity: 0.50}
+.o75 {opacity: 0.75}
+.o85 {opacity: 0.85}
+.o100 {opacity: 1}
+
+.b0 {bottom: 0}
+
+.multiline {word-wrap: break-word; white-space: pre-line;}
+
+.grad {background: linear-gradient(270deg, rgba(0,0,0,1) 0%, rgba(130,130,130,1) 39%, rgba(155,155,155,1) 100%);}
+
+.tl50p {transform: translateX(-50%);}
+
+.bc-bla { border-color: #000 }
+.bc-blu { border-color: #1541BE }
+.bc-blu-d { border-color: #1541BE }
+.bc-blu-l { border-color: #ADC3FF }
+.bc-blu2 { border-color: #a8b1d8 }
+.bc-blu3 { border-color: rgb(232, 240, 254) }
+.bc-bro { border-color: #C15F05 }
+.bc-bro-l { border-color: #DFB48C }
+.bc-g1 { border-color: #111 }
+.bc-g10 { border-color: #EEE }
+.bc-g2 { border-color: #222 }
+.bc-g3 { border-color: #333 }
+.bc-g4 { border-color: #555 }
+.bc-g5 { border-color: #777 }
+.bc-g6 { border-color: #999 }
+.bc-g7 { border-color: #BBB }
+.bc-g8 { border-color: #CCC }
+.bc-g9 { border-color: #DDD }
+.bc-gre { border-color: #64B236 }
+.bc-gre-l { border-color: #B9DDA4 }
+.bc-gre2 { border-color: #00FFC7 }
+.bc-gre3 { border-color: #2FA78D }
+.bc-gre4 { border-color: #A5FFEC }
+.bc-nav { border-color: #1D3743 }
+.bc-nav2 { border-color: hsl(228, 35%, 38%) }
+.bc-oli { border-color: #95A821 }
+.bc-oli-l { border-color: #DFE9A4 }
+.bc-ora { border-color: #FB5306 }
+.bc-ora-l { border-color: #FFA77E }
+.bc-pin { border-color: hsl(308, 66%, 71%) }
+.bc-pur { border-color: #A91B4E }
+.bc-pur-l { border-color: #D091A8 }
+.bc-red { border-color: #D0210F }
+.bc-red-l { border-color: #FB8C81 }
+.bc-sky2 { border-color: hsl(200, 86%, 74%) }
+.bc-tan { border-color: #FA9B00 }
+.bc-tan-l { border-color: #F5C982 }
+.bc-whi { border-color: #FFF }
+.bc-whi-off { border-color: #F2FBFE }
+.bg-bla { background-color: #000 }
+.bg-blu { background-color: #1541BE }
+.bg-blu-d { background-color: #1541BE }
+.bg-blu-l { background-color: #ADC3FF }
+.bg-blu2 { background-color: #a8b1d8 }
+.bg-blu3 { background-color: rgb(232, 240, 254) }
+.bg-bro { background-color: #C15F05 }
+.bg-bro-l { background-color: #DFB48C }
+.bg-g1 { background-color: #111 }
+.bg-g10 { background-color: #EEE }
+.bg-g2 { background-color: #222 }
+.bg-g3 { background-color: #333 }
+.bg-g4 { background-color: #555 }
+.bg-g5 { background-color: #777 }
+.bg-g6 { background-color: #999 }
+.bg-g7 { background-color: #BBB }
+.bg-g8 { background-color: #CCC }
+.bg-g9 { background-color: #DDD }
+.bg-gre { background-color: #3ad041 }
+.bg-gre-l { background-color: #a2e397 }
+.bg-gre2 { background-color: #00FFC7 }
+.bg-gre3 { background-color: #2FA78D }
+.bg-gre4 { background-color: #A5FFEC }
+.bg-nav { background-color: #1D3743 }
+.bg-nav2 { background-color: hsl(228, 35%, 38%) }
+.bg-oli { background-color: #95A821 }
+.bg-oli-l { background-color: #DFE9A4 }
+.bg-ora { background-color: #FB5306 }
+.bg-ora-l { background-color: #FFA77E }
+.bg-pin { background-color: hsl(308, 66%, 71%) }
+.bg-pin-l { background-color: #F9CFCA; }
+.bg-pur { background-color: #A91B4E }
+.bg-pur-l { background-color: #D091A8 }
+.bg-red { background-color: #D0210F }
+.bg-red-l { background-color: #FB8C81 }
+.bg-sky2 { background-color: hsl(200, 86%, 74%) }
+.bg-tan { background-color: #FA9B00 }
+.bg-tan-l { background-color: #F5C982 }
+.bg-whi { background-color: #FFF }
+.bg-whi-off { background-color: #F2FBFE }
+.c-bla { color: #000 }
+.c-blu { color: #1541BE }
+.c-blu-d { color: #1541BE }
+.c-blu-l { color: #ADC3FF }
+.c-blu2 { color: #a8b1d8 }
+.c-blu3 { color: rgb(232, 240, 254) }
+.c-bro { color: #C15F05 }
+.c-bro-l { color: #DFB48C }
+.c-g1 { color: #111 }
+.c-g10 { color: #EEE }
+.c-g2 { color: #222 }
+.c-g3 { color: #333 }
+.c-g4 { color: #555 }
+.c-g5 { color: #777 }
+.c-g6 { color: #999 }
+.c-g7 { color: #BBB }
+.c-g8 { color: #CCC }
+.c-g9 { color: #DDD }
+.c-gre { color: #64B236 }
+.c-gre-l { color: #B9DDA4 }
+.c-gre2 { color: #00FFC7 }
+.c-gre3 { color: #2FA78D }
+.c-gre4 { color: #A5FFEC }
+.c-nav { color: #1D3743 }
+.c-nav2 { color: hsl(228, 35%, 38%) }
+.c-oli { color: #95A821 }
+.c-oli-l { color: #DFE9A4 }
+.c-ora { color: #FB5306 }
+.c-ora-l { color: #FFA77E }
+.c-pin { color: hsl(308, 66%, 71%) }
+.c-pur { color: #A91B4E }
+.c-pur-l { color: #D091A8 }
+.c-red { color: #D0210F }
+.c-red-l { color: #FB8C81 }
+.c-sky2 { color: hsl(200, 86%, 74%) }
+.c-tan { color: #FA9B00 }
+.c-tan-l { color: #F5C982 }
+.c-whi { color: #FFF }
+.c-whi-off { color: #F2FBFE }
