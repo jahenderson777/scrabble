@@ -42,17 +42,18 @@
     (.then #(.text %))
     (.then #(do (reset! dictionary-text-file %))))
 
-(def dictionary (->> @dictionary-text-file ; (slurp "words_def.txt")
-                     str/split-lines
+(def dictionary 
+  (->> @dictionary-text-file ; (slurp "words_def.txt")
+       str/split-lines
                     ;(take 1000)
-                     (map #(let [[w def] (str/split % #"\t")]
-                             [w {:def def
-                                 :letter-sums (letter-sums w)
-                                 :score (score-letters-face-value w)
+       (map #(let [[w def] (str/split % #"\t")]
+               [w {:def def
+                   :letter-sums (letter-sums w)
+                   :score (score-letters-face-value w)
                                 ;:freq (get words-freq w)
-                                 }]))
-                     (into {})
-                     delay))
+                   }]))
+       (into {}) 
+       delay))
 
 (defn can-make? [hand letter-sums]
   (let [num-blanks (get hand \_ 0)
@@ -103,7 +104,6 @@
 
 (def letter-sets
   (->> (keys @dictionary)
-       ;(take 1000)
        (group-by letter-set)
        (group-by (fn [[k v]]
                    (->> k
@@ -112,7 +112,7 @@
        (group-by (fn [[k v]]
                    (->> k
                         (map letter-group)
-                        (into #{}))))
+                        (into #{})))) 
        delay))
 
 (defn find-words [hand]
@@ -320,9 +320,10 @@
 (defn best-play [b hand]
   (let [v [(check-rows b hand)
            (check-rows b hand true)]
-        v (seq (remove nil? v))]
-    (when v
-      (apply max-key :score v))))
+        v (seq (remove nil? v))
+        bp (when v
+             (apply max-key :score v))] 
+    (assoc bp :def (:def (get @dictionary (:word bp))))))
 
 (defn shuffled-bag []
   (shuffle [;1  2  3  4  5  6  7  8  9  

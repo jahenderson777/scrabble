@@ -1,7 +1,5 @@
 (ns scrabble.core
   (:require
-   [cljs.spec.alpha :as s]
-   [clojure.edn :as edn]
    [uix.core :as uix :refer [defui $]]
    [scrabble.scrabble :as scrab]
    [uix.dom]
@@ -13,7 +11,6 @@
     (let [before (subs s 0 n)
           after (subs s (inc n))]
       (str before new-char after))))
-
 
 (def empty-board ["≡..2...≡...2..≡" ;1
                   ".=...3...3...=." ;2
@@ -87,8 +84,6 @@
                              ))))
                     row))))
 
-
-
 (defui player [{:keys [state set-state player-idx]}]
   (let [[active set-active] (uix/use-state false)
         player (get-in state [:players player-idx])
@@ -128,10 +123,12 @@
                      :style {:border (if active
                                        "5px solid #88f"
                                        "5px solid #bbb")}}
-       ($ :div.pb7 (:name player))
-       ($ :input {:type "checkbox"
-                  :on-click #(set-state (fn [s] (assoc s :current-player player-idx)))
-                  :checked (= current-player player-idx)})
+       ($ :div.flexr.jcsb.p5
+          ($ :div.pb3 (:name player))
+          ($ :input.w20.h20.pb3 {:type "checkbox"
+                             :on-click #(set-state (fn [s] (assoc s :current-player player-idx)))
+                             :on-change #()
+                             :checked (= current-player player-idx)}))
        ($ :div.flexr.ais
           (for [i (range 7)]
             ($ :div.w53.h53.b1.flexc.jcc.tac.pointer.bg-whi
@@ -234,7 +231,7 @@
           "SHOW BEST PLAY")
        ($ :div.fs36.m20 (:score debug))
        ($ :pre.bg-whi.brad6 
-          (with-out-str (pprint (assoc debug :def (get @scrab/dictionary (get debug :word)))))))))
+          (with-out-str (pprint debug))))))
 
 (defonce root
   (uix.dom/create-root (js/document.getElementById "root")))

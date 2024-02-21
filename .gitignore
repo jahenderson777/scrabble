@@ -1,6 +1,6 @@
 /out/
-/public/js/compiled/
-/public/js/cljs-runtime/
+/docs/js/compiled/
+/docs/js/cljs-runtime/
 /target/
 /*-init.clj
 /*.log

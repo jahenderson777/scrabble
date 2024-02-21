@@ -1,5 +1,5 @@
 {:deps true
- :dev-http {8080 "public"}
+ :dev-http {8080 "docs"}
  :builds {:app
           {:target :browser
            :modules {:main {:entries [scrabble.core]
@@ -7,18 +7,4 @@
            :devtools {:preloads [preload devtools.preload]}
            :build-hooks      [(dev/extract-classes)]}}}
 
-#_{:deps     {:aliases [:dev]}
- :nrepl    {:port 8777}
- :dev-http {7000 "resources/public" 8291 "out/test"}
 
- :builds
- {:app          {:target           :browser
-                 :output-dir       "resources/public/js/compiled"
-                 :asset-path       "/js/compiled"
-                 :modules          {:app {:init-fn timeliner-db.core/init}}
-                 :devtools         {:preloads [preload devtools.preload]}
-                 :build-hooks      [(dev/extract-classes)]
-                 :compiler-options {:closure-defines    {timeliner-db.api/env "prod"}
-                                    :output-feature-set :es-next}
-                 :dev              {:compiler-options   {:closure-defines {timeliner-db.api/env "staging"}}
-                                    :output-feature-set :es-next}}}}

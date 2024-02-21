@@ -153,7 +153,7 @@
                                "}\n"))
                         (get used-classes k))))
          (apply str)
-         (spit "public/atomic-dynamic.css")))
+         (spit "docs/atomic-dynamic.css")))
   build-state)
 
 
