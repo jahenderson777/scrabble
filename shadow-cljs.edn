@@ -2,9 +2,11 @@
  :dev-http {8080 "docs"}
  :builds {:app
           {:target :browser
+           :output-dir "docs/js"
            :modules {:main {:entries [scrabble.core]
                             :init-fn scrabble.core/init}} 
            :devtools {:preloads [preload devtools.preload]}
-           :build-hooks      [(dev/extract-classes)]}}}
+           :build-hooks      [(dev/extract-classes)]
+           }}}
 
 
