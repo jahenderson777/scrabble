@@ -38,7 +38,7 @@
 
 (def dictionary-text-file (atom nil))
 
-(-> (.fetch js/window "/dictionary.txt")
+(-> (.fetch js/window "dictionary.txt")
     (.then #(.text %))
     (.then #(do (reset! dictionary-text-file %))))
 
