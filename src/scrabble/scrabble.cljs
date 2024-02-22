@@ -325,20 +325,22 @@
              (apply max-key :score v))] 
     (assoc bp :def (:def (get @dictionary (:word bp))))))
 
+(def full-bag [;1  2  3  4  5  6  7  8  9  
+               \A \A \A \A \A \A \A \A \A
+               \B \B \C \C \D \D \D \D
+               \E \E \E \E \E \E \E \E \E \E \E \E
+               \F \F \G \G \G \H \H
+               \I \I \I \I \I \I \I \I \I
+               \J \K \L \L \L \L \M \M
+               \N \N \N \N \N \N
+               \O \O \O \O \O \O \O \O \P \P \Q
+               \R \R \R \R \R \R \S \S \S \S
+               \T \T \T \T \T \T \U \U \U \U
+               \V \V \W \W \X \Y \Y \Z ;\_ \_
+               ])
+
 (defn shuffled-bag []
-  (shuffle [;1  2  3  4  5  6  7  8  9  
-            \A \A \A \A \A \A \A \A \A
-            \B \B \C \C \D \D \D \D
-            \E \E \E \E \E \E \E \E \E \E \E \E
-            \F \F \G \G \G \H \H
-            \I \I \I \I \I \I \I \I \I
-            \J \K \L \L \L \L \M \M
-            \N \N \N \N \N \N
-            \O \O \O \O \O \O \O \O \P \P \Q
-            \R \R \R \R \R \R \S \S \S \S
-            \T \T \T \T \T \T \U \U \U \U
-            \V \V \W \W \X \Y \Y \Z ;\_ \_
-            ]))
+  (shuffle full-bag))
 
 (defn draw-tiles [{:keys [bag] :as state} player-key]
   (let [[new-tiles new-bag] (split-at (- 7 (count (get state player-key))) bag)]

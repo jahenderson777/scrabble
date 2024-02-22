@@ -29,8 +29,12 @@
                   "≡..2...≡...2..≡" ;15
                   ])
 
-(defui letter-tile [{:keys [l]}]
+(defui letter-tile [{:keys [l cnt]}]
   ($ :div.rel
+     (when cnt
+       ($ :div.fs10.abs.b.c-blu {:style {:left 3
+                                         :top 3}}
+          cnt))
      ($ :div.fs10.abs.b {:style {:left 38
                                  :top 33}}
         (get scrab/letter-scores (nth l 0)))
@@ -84,6 +88,14 @@
                              ))))
                     row))))
 
+(defn remaining-letters [state]
+  (let [board (get state :board)
+        player-hands (apply str (map :hand (:players state)))]
+    (->> (str/replace (apply str player-hands board) #"[^A-Za-z_]" "")
+         (reduce (fn [bag l]
+                   (str/replace-first bag (re-pattern l) ""))
+                 (apply str scrab/full-bag)))))
+
 (defui player [{:keys [state set-state player-idx]}]
   (let [[active set-active] (uix/use-state false)
         player (get-in state [:players player-idx])
@@ -94,14 +106,14 @@
                                          (when active
                                            (cond (= (.-key evt) "ArrowLeft")
                                                  (set-state #(update-in % [:players player-idx :selected]
-                                                                     (fn [s] (dec s))))
+                                                                        (fn [s] (dec s))))
                                                  (= (.-key evt) "ArrowRight")
                                                  (set-state #(update-in % [:players player-idx :selected]
-                                                                     (fn [s] (inc s)))) 
+                                                                        (fn [s] (inc s))))
                                                  (re-matches #"[A-Za-z ]" (.-key evt))
                                                  (set-state #(let [selected (get-in % [:players player-idx :selected])]
                                                                (-> (update-in % [:players player-idx :hand]
-                                                                              (fn [r] 
+                                                                              (fn [r]
                                                                                 (if (= " " (.-key evt))
                                                                                   (replace-nth-char r selected " ")
                                                                                   (replace-nth-char r selected (str/upper-case (.-key evt))))))
@@ -113,7 +125,8 @@
                                                                               (fn [r]
                                                                                 (replace-nth-char r (dec selected) " ")))
                                                                    (update-in [:players player-idx :selected]
-                                                                              (fn [s] (dec s)))))))))]
+                                                                              (fn [s] (dec s)))))))
+                                           (.preventDefault evt)))]
                         (when active (js/document.addEventListener "keydown" handle-key))
                         (fn [] (js/document.removeEventListener "keydown" handle-key))))
                     [set-state active player-idx])
@@ -162,31 +175,49 @@
                                                                     (fn [s] (let [[sel-col sel-row vert] s]
                                                                               [sel-col (inc sel-row) vert]))))
                                                 (re-matches #"[A-Za-z ]" (.-key evt))
-                                                (set-state #(let [[col-idx row-idx vert] (:selected %)]
-                                                              (-> (update-in % [:board row-idx]
-                                                                              (fn [r]
-                                                                                (if (= " " (.-key evt))
-                                                                                  (replace-nth-char r col-idx (get-in empty-board [col-idx row-idx]))
-                                                                                  (replace-nth-char r col-idx (str/upper-case (.-key evt))))))
-                                                                   (update :selected (fn [s] (let [[sel-col sel-row vert] s]
-                                                                                               (if vert
-                                                                                                 [sel-col (inc sel-row) vert]
-                                                                                                 [(inc sel-col) sel-row vert])))))))
+                                                (set-state #(let [k (str/upper-case (.-key evt))
+                                                                  [col-idx row-idx vert] (:selected %)
+                                                                  p-idx (:current-player %)
+                                                                  source (if (= p-idx -1)
+                                                                           (remaining-letters %)
+                                                                           (get-in % [:players p-idx :hand]))]
+                                                              (if (or (str/includes? source k) (neg? p-idx))
+                                                                (-> (if (neg? p-idx)
+                                                                      %
+                                                                      (update-in % [:players p-idx :hand]
+                                                                                 (fn [h] 
+                                                                                   (str/replace-first h (re-pattern k) " "))))
+                                                                    (update-in [:board row-idx]
+                                                                               (fn [r]
+                                                                                 (if (= " " k)
+                                                                                   (replace-nth-char r col-idx (get-in empty-board [col-idx row-idx]))
+                                                                                   (replace-nth-char r col-idx (str/upper-case (.-key evt))))))
+                                                                    (update :selected (fn [s] (let [[sel-col sel-row vert] s]
+                                                                                                (if vert
+                                                                                                  [sel-col (inc sel-row) vert]
+                                                                                                  [(inc sel-col) sel-row vert])))))
+                                                                %)))
                                                 (= (.-key evt) "Backspace")
                                                 (set-state #(let [[col-idx row-idx vert] (:selected %)
                                                                   col-idx (if vert col-idx (dec col-idx))
-                                                                  row-idx (if vert (dec row-idx) row-idx)]
-                                                              (-> (update-in % [:board row-idx]
+                                                                  row-idx (if vert (dec row-idx) row-idx)
+                                                                  p-idx (:current-player %)]
+                                                              (-> (if (neg? p-idx) %
+                                                                      (update-in % [:players p-idx :hand]
+                                                                                 (fn [h] 
+                                                                                   (if-let [s (re-matches #"[A-Za-z_]"
+                                                                                                          (get-in % [:board row-idx col-idx]))]
+                                                                                     (subs (str/replace-first (str h " ") #" " s)
+                                                                                           0 7)
+                                                                                     h))))
+                                                                  (update-in [:board row-idx]
                                                                              (fn [r]
                                                                                (replace-nth-char r col-idx (get-in empty-board [col-idx row-idx]))))
                                                                   (update :selected (fn [s] (let [[sel-col sel-row vert] s]
                                                                                               (if vert
                                                                                                 [sel-col (dec sel-row) vert]
-                                                                                                [(dec sel-col) sel-row vert])))))))
-                                                
-                     
-                                                
-                                                )))]
+                                                                                                [(dec sel-col) sel-row vert]))))))))
+                                                (.preventDefault evt)))]
                        (when active (js/document.addEventListener "keydown" handle-key))
                        (fn [] (js/document.removeEventListener "keydown" handle-key))))
                    [set-state active])
@@ -201,6 +232,44 @@
                       ($ row (merge props {:key row-idx :row r :row-idx row-idx
                                            :state state :set-state set-state})))
                     (:board state)))))
+
+
+
+(defui bag [{:keys [state set-state]}]
+  (let [[active set-active] (uix/use-state false) 
+        [open set-open] (uix/use-state true)
+        current-player-idx (:current-player state)
+        current-player (get-in state [:players ]) 
+        {:keys [selected]} player
+        remaining (->> (remaining-letters state)
+                       frequencies
+                       sort)
+        selected (:bag-selected state)
+        ] 
+    ($ :div.p6.mb10 {:tab-index 0
+                     :on-focus #(set-active true)
+                     :on-blur #(set-active false)
+                     :style {:border (if active
+                                       "5px solid #88f"
+                                       "5px solid #bbb")}}
+       ($ :div.flexr.jcsb.p5
+          ($ :button.pb3 {:on-click #(set-open not)} "Bag")
+          ($ :input.w20.h20.pb3 {:type "checkbox"
+                                 :on-click #(set-state (fn [s] (assoc s :current-player -1)))
+                                 :on-change #()
+                                 :checked (= current-player-idx -1)}))
+       
+       ($ :div.maxw500.tac
+          (when open
+            (map-indexed (fn [idx [l cnt]]
+                           ($ :div.inline.w53.h53.b1.flexc.jcc.tac.pointer.bg-whi
+                              {:key l
+                               :on-click (fn []
+                                           #_(set-state (fn [s] (assoc-in s [:players player-idx :selected] i))))
+                               :style {:border-color (when (= selected idx)
+                                                       "#00F")}}
+                              ($ letter-tile {:l l :cnt cnt})))
+                         remaining))))))
 
 (defui app []
   (let [[state set-state] (uix/use-state {:board empty-board
@@ -223,6 +292,7 @@
                                     :state state
                                     :set-state set-state}))
                        (:players state)))
+       ($ bag {:state state :set-state set-state})
        ($ :button.brad3.bg-gre.c-whi.p10 
           {:on-click #(let [bp (scrab/best-play (:board state) 
                                                 (subs (get-in state [:players (get state :current-player) :hand])
