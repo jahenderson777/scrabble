@@ -10,6 +10,7 @@
 
 (def new-state 
   {:board scrab/board
+   :old-board scrab/board
    :current-player 0
    :players [{:name "Player 1"
               :selected 0
@@ -154,3 +155,65 @@
                                         [sel-col (inc sel-row) vert]
                                         [(inc sel-col) sel-row vert]))))))
     state))
+
+(defn check-new-board' [old-board board]
+  (let [different-rows (keep-indexed (fn [idx r]
+                                       (when (not= r (nth old-board idx))
+                                         idx))
+                                     board)]
+    (when (= 1 (count different-rows))
+      (let [r (first different-rows)
+            [x w] (reduce (fn [[idx w found] l]
+                            (if (re-matches #"[A-Za-z]" l)
+                              [(inc idx) (str w l) (or found (re-matches #"[^A-Za-z]" (nth (nth old-board r) idx)))]
+                              (if found
+                                (reduced [idx w])
+                                [(inc idx) "" false])))
+                          [0 "" false]
+                          (nth board r))]
+        (when-let [score (and (get @scrab/dictionary w)
+                              (scrab/check-row-word old-board r w (- x (count w))))]
+          score)))))
+
+(defn check-new-board [state]
+  (let [{:keys [board old-board]} state]
+    (or (check-new-board' old-board board)
+        (check-new-board' (scrab/transpose old-board) (scrab/transpose board)))))
+
+(comment 
+  (re-matches #"[^A-Za-z]" (nth (nth old-board r) idx))
+
+  (check-new-board' ["≡..2...≡...2..≡" ;1
+                     ".=...3...3...=." ;2
+                     "..=...2.2...=.." ;3
+                     "2..=...2...=..2" ;4
+                     "....=.....=...." ;5
+                     ".3...3...3...3." ;6
+                     "..2...2.2...2.." ;7
+                     "≡..2...FACE2..≡" ;8
+                     "..2...2A2...2.." ;9
+                     ".3...3.C.3...3." ;10
+                     "....=..E..=...." ;11
+                     "2..=...2...=..2" ;12
+                     "..=...2.2...=.." ;13
+                     ".=...3...3...=." ;14
+                     "≡..2...≡...2..≡" ;15
+                     ] 
+                    ["≡..2...≡...2..≡" ;1
+                     ".=...3...3...=." ;2
+                     "..=...2.2...=.." ;3
+                     "2..=...2...=..2" ;4
+                     "....=.....=...." ;5
+                     ".3...3...3...3." ;6
+                     "..2...2.2...2.." ;7
+                     "≡..2...FACE2..≡" ;8
+                     "..2...2A2...2.." ;9
+                     ".3...3.C.3...3." ;10
+                     "....=..E..=...." ;11
+                     "2..=...D...=..2" ;12
+                     "..=...2.2...=.." ;13
+                     ".=...3...3...=." ;14
+                     "≡..2...≡...2..≡" ;15
+                     ])
+  )
+

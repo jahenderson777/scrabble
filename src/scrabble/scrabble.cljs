@@ -273,6 +273,12 @@
           r+1 (when (<= r+1 14) (nth board r+1))]
       (re-find #"[A-Z]" (str r-1 (nth board row-number) r+1)))))
 
+(defn check-row-word [board row-number word pos]
+  (when (potential-row board row-number)
+    (let [touching-letters (touching-letters board row-number)
+          row (nth board row-number)]
+      (calc-score row word pos touching-letters))))
+
 (defn check-row [board row-number hand]
   (when (potential-row board row-number)
     (let [touching-letters (touching-letters board row-number)
