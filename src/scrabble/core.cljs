@@ -154,10 +154,10 @@
     
     ($ :div.flexc.aic
        ($ board {:state state :! ! :tab 0}) 
-       ($ :button.brad3.bg-gre.c-whi.p10
+       ($ :button.brad3.bg-gre.c-whi.p10.m5
           {:on-click #(! (fn [s] (assoc s :old-board (get s :board))))}
           "NEXT")
-       ($ :div 
+       ($ :div.p5
           (state/check-new-board state))
        ($ :div.flexr.jcsb.w800
           (map-indexed (fn [player-idx p]
