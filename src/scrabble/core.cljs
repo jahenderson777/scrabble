@@ -18,7 +18,7 @@
         (get scrab/letter-scores (nth l 0)))
      ($ :div.fs36.b.c-g1 l)))
 
-(defui row [{:keys [row row-idx state set-state]}]
+(defui row [{:keys [row row-idx state !]}]
   (let [{:keys [selected]} state]
     ($ :div.flexr.ais
        (map-indexed (fn [col-idx c]
@@ -31,8 +31,8 @@
                                                     selected-row)
                                                  (= col-idx
                                                     selected-col))
-                                          (set-state #(assoc % :selected [col-idx row-idx (not vert)]))
-                                          (set-state #(assoc % :selected [col-idx row-idx vert]))))
+                                          (! #(assoc % :selected [col-idx row-idx (not vert)]))
+                                          (! #(assoc % :selected [col-idx row-idx vert]))))
                             :style {:border-color (cond (and (= row-idx
                                                                 selected-row)
                                                              (= col-idx
@@ -66,7 +66,7 @@
                              ))))
                     row))))
 
-(defui player [{:keys [state set-state player-idx]}]
+(defui player [{:keys [state ! player-idx]}]
   (let [[active set-active] (uix/use-state false)
         player (get-in state [:players player-idx])
         current-player (:current-player state)
@@ -74,11 +74,11 @@
     (uix/use-effect (fn []
                       (let [handle-key (fn [evt]
                                          (when active
-                                           (set-state (partial state/player-handle-key (.-key evt) player-idx) )
+                                           (! (partial state/player-handle-key (.-key evt) player-idx) )
                                            (.preventDefault evt)))]
                         (when active (js/document.addEventListener "keydown" handle-key))
                         (fn [] (js/document.removeEventListener "keydown" handle-key))))
-                    [set-state active player-idx])
+                    [! active player-idx])
     ($ :div.p6.mb10 {:tab-index 0
                      :on-focus #(set-active true)
                      :on-blur #(set-active false)
@@ -88,7 +88,7 @@
        ($ :div.flexr.jcsb.p5
           ($ :div.pb3 (:name player))
           ($ :input.w20.h20.pb3 {:type "checkbox"
-                             :on-click #(set-state (fn [s] (update s :current-player 
+                             :on-click #(! (fn [s] (update s :current-player 
                                                                    (fn [p-idx] 
                                                                      (if (= p-idx player-idx)
                                                                        -1
@@ -100,21 +100,21 @@
             ($ :div.w53.h53.b1.flexc.jcc.tac.pointer.bg-whi
                {:key i
                 :on-click (fn []
-                            (set-state (fn [s] (assoc-in s [:players player-idx :selected] i))))
+                            (! (fn [s] (assoc-in s [:players player-idx :selected] i))))
                 :style {:border-color (when (= selected i)
                                         "#00F")}}
                ($ letter-tile {:l (nth (:hand player) i)})))))))
 
-(defui board [{:keys [state set-state tab] :as props}]
+(defui board [{:keys [state ! tab] :as props}]
   (let [[active set-active] (uix/use-state false)]
     (uix/use-effect (fn []
                      (let [handle-key (fn [evt]
                                         (when active
-                                          (set-state (partial state/board-handle-key (.-key evt)))
+                                          (! (partial state/board-handle-key (.-key evt)))
                                           (.preventDefault evt)))]
                        (when active (js/document.addEventListener "keydown" handle-key))
                        (fn [] (js/document.removeEventListener "keydown" handle-key))))
-                   [set-state active])
+                   [! active])
     ($ :div.m10.inline
        {:style {:border (if active
                           "5px solid #88f"
@@ -123,11 +123,10 @@
         :on-focus #(set-active true)
         :on-blur #(set-active false)}
        (map-indexed (fn [row-idx r]
-                      ($ row (merge props {:key row-idx :row r :row-idx row-idx
-                                           :state state :set-state set-state})))
+                      ($ row (merge props {:key row-idx :row r :row-idx row-idx})))
                     (:board state)))))
 
-(defui bag [{:keys [state set-state]}]
+(defui bag [{:keys [state !]}]
   (let [[open set-open] (uix/use-state true)
         remaining (->> (state/remaining-letters state)
                        frequencies
@@ -136,34 +135,34 @@
     ($ :div.p6.mb10.b1.bc-g6
        ($ :div.flexr.jcsb.p5
           ($ :button.pb3 {:on-click #(set-open not)} "Bag")
-          ($ :button.brad3.bg-gre.p3.c-whi {:on-click #(set-state state/bag-fill-hand)}
+          ($ :button.brad3.bg-gre.p3.c-whi {:on-click #(! state/bag-fill-hand)}
              "Fill hand")) 
        ($ :div.maxw500.tac
           (when open
             (map-indexed (fn [idx [l cnt]]
                            ($ :div.inline.w53.h53.b1.flexc.jcc.tac.pointer.bg-whi
                               {:key l
-                               :on-click (fn [evt] (set-state (partial state/bag-click-letter l)))
+                               :on-click #(! (partial state/bag-click-letter l))
                                :style {:border-color (when (= selected idx)
                                                        "#00F")}}
                               ($ letter-tile {:l l :cnt cnt})))
                          remaining))))))
 
 (defui app []
-  (let [[state set-state] (uix/use-state state/new-state)
+  (let [[state !] (uix/use-state state/new-state)
         [debug set-debug] (uix/use-state nil)] 
     
     ($ :div.flexc.aic
-       ($ board {:state state :set-state set-state :tab 0}) 
+       ($ board {:state state :! ! :tab 0}) 
        ($ :div.flexr.jcsb.w800
           (map-indexed (fn [player-idx p]
                          ($ player {:key player-idx
                                     :tab 0
                                     :player-idx player-idx
                                     :state state
-                                    :set-state set-state}))
+                                    :! !}))
                        (:players state)))
-       ($ bag {:state state :set-state set-state})
+       ($ bag {:state state :! !})
        ($ :button.brad3.bg-gre.c-whi.p10 
           {:on-click #(let [bp (scrab/best-play (:board state) 
                                                 (subs (get-in state [:players (get state :current-player) :hand])

@@ -38,10 +38,6 @@
 
 (def dictionary-text-file (atom nil))
 
-(-> (.fetch js/window (str (.-URL js/document) "dictionary.txt"))
-    (.then #(.text %))
-    (.then #(do (reset! dictionary-text-file %))))
-
 (def dictionary 
   (->> @dictionary-text-file ; (slurp "words_def.txt")
        str/split-lines
@@ -367,6 +363,11 @@
                   
                   :board board}))
 
+(-> (.fetch js/window (str (.-URL js/document) "dictionary.txt"))
+    (.then #(.text %))
+    (.then #(do (reset! dictionary-text-file %)
+                (def go (count @letter-sets)))))
+
 (comment
   (do
     (reset! state {:bag (shuffled-bag)
@@ -384,3 +385,4 @@
      (swap! state play :player-3)
      (swap! state play :player-4)))
   )
+

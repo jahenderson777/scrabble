@@ -12,10 +12,11 @@
   {:board scrab/board
    :current-player 0
    :players [{:name "Player 1"
-              :selected 2
-              :hand "ABCDEFG"}
+              :selected 0
+              :hand "       "}
              {:name "Player 2"
-              :hand "ABCDEFG"}]
+              :selected 0
+              :hand "       "}]
    :selected [7 7 nil]})
 
 (defn replace-nth-char [s n new-char]
@@ -136,7 +137,7 @@
 (defn bag-click-letter [k state]
   (if (re-matches #"[A-Za-z ]" k)
     (let [k (str/upper-case k)
-          [col-idx row-idx vert] (:selected state)
+          [col-idx row-idx _] (:selected state)
           p-idx (:current-player state)]
       (-> (if (neg? p-idx)
             (update-in state [:board row-idx]
