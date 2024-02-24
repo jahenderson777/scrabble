@@ -188,13 +188,16 @@
          ($ :div.fs36.m20 (:score (first debug)))
          ($ :div.fs16.m20 
             (for [i (range 15)] 
-              ($ :pre.m0.fs12 {:key i} 
+              ($ :pre.m0.fs14 {:key i} 
                  (nth (:new-board (first debug)) i))))
-         ($ :pre.bg-whi.brad6.fs18
-            (with-out-str (pprint (take 10
-                                        (dedupe (map (fn [{:keys [score word pos] :as m}]
-                                                       (str score " " word " - " (:def m)))
-                                                     debug))))))))))
+         ($ :div.fs12
+            (map-indexed (fn [i s]
+                           ($ :div {:key i}
+                              s))
+                         (take 10
+                               (dedupe (map (fn [{:keys [score word pos] :as m}]
+                                              (str score " " word " - " (:def m)))
+                                            debug)))))))))
 
 (defonce root
   (uix.dom/create-root (js/document.getElementById "root")))
