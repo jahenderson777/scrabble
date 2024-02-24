@@ -166,18 +166,24 @@
          ($ board {:state state :! ! :tab 0}) 
          ($ :div
             ($ :button.brad3.bg-gre.c-whi.p10.m5
-               {:on-click #(! (fn [s] (assoc s :old-board (get s :board))))}
+               {:on-click #(! (fn [s] (assoc (scrab/bag-fill-hand s)
+                                             :old-board (get s :board)
+                                             :current-player (mod (inc (get s :current-player))
+                                                                  2))))}
                "NEXT")
             ($ :button.brad3.bg-blu.c-whi.p10.m5
                {:on-click #(! (fn [s] (assoc s :board (get s :old-board))))}
                "REVERT"))
          ($ :div.p5
-            (let [[score side-words] (scrab/check-new-board state)]
-              [($ :div.b "Score = " score)
-               (map-indexed (fn [i w]
-                              ($ :div {:key i}
-                                 ($ :span.b w) " - " ($ :span (get-in @scrab/dictionary [:words w :def]))))
-                            side-words)]))
+            (let [[score [main-word main-word-def] side-words] (scrab/check-new-board state)]
+              (when score
+                [($ :div.b "Score = " score)
+                 ($ :div 
+                    ($ :span.b main-word) " - " ($ :span main-word-def))
+                 (map-indexed (fn [i w]
+                                ($ :div {:key i}
+                                   ($ :span.b w) " - " ($ :span (get-in @scrab/dictionary [:words w :def]))))
+                              side-words)])))
          ($ :div.flexr.jcsb.w800
             (map-indexed (fn [player-idx p]
                            ($ player {:key player-idx

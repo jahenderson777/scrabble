@@ -586,9 +586,9 @@
                                 [(inc idx) "" false])))
                           [0 "" false]
                           (nth board r))]
-        (when-let [score (and (get-in @dictionary [:words w])
+        (when-let [[score side-words] (and (get-in @dictionary [:words w])
                               (check-row-word old-board r w (- x (count w))))]
-          score)))))
+          [score [w (get-in @dictionary [:words w :def])] side-words])))))
 
 (defn check-new-board [state]
   (let [{:keys [board old-board]} state]
