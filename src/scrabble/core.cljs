@@ -190,7 +190,7 @@
             (for [i (range 15)] 
               ($ :pre.m0.fs12 {:key i} 
                  (nth (:new-board (first debug)) i))))
-         ($ :pre.bg-whi.brad6 
+         ($ :pre.bg-whi.brad6.fs18
             (with-out-str (pprint (take 10
                                         (dedupe (map (fn [{:keys [score word pos] :as m}]
                                                        (str score " " word " - " (:def m)))
