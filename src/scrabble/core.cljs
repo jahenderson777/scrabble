@@ -164,9 +164,13 @@
       ($ :h2.tac "Building dictionary, please wait...")
       ($ :div.flexc.aic 
          ($ board {:state state :! ! :tab 0}) 
-         ($ :button.brad3.bg-gre.c-whi.p10.m5
-            {:on-click #(! (fn [s] (assoc s :old-board (get s :board))))}
-            "NEXT")
+         ($ :div
+            ($ :button.brad3.bg-gre.c-whi.p10.m5
+               {:on-click #(! (fn [s] (assoc s :old-board (get s :board))))}
+               "NEXT")
+            ($ :button.brad3.bg-blu.c-whi.p10.m5
+               {:on-click #(! (fn [s] (assoc s :board (get s :old-board))))}
+               "REVERT"))
          ($ :div.p5
             (scrab/check-new-board state))
          ($ :div.flexr.jcsb.w800
