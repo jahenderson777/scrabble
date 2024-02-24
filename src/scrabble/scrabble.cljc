@@ -199,13 +199,15 @@
   (loop [i 0
          total nil
          word-multipliers 1
-         main-word-score 0
-         overlapping? false]
+         main-word-score 0 
+         overlapping? false
+         side-words []]
     (if (< i (count word))
-      (let [[before after] (nth touching-letters (+ i pos))]
+      (let [[before after] (nth touching-letters (+ i pos))
+            side-word (str before (nth word i) after)]
         (when-let [score
                    (or (and (not (or before after)) 0)
-                       (:score (get-in @dictionary [:words (str before (nth word i) after)])))]
+                       (:score (get-in @dictionary [:words side-word])))]
           (let [cell (nth row (+ pos i))
                 this-letter-score (get letter-scores (nth word i))
                 score (cond (= cell \≡)
@@ -240,10 +242,14 @@
                          :else (+ main-word-score this-letter-score))
                    (or overlapping?
                        (= cell (nth word i))
-                       (= cell \*))))))
+                       (= cell \*))
+                   (if (pos? score) 
+                     (conj side-words side-word)
+                     side-words)))))
       (if (or overlapping? (pos? (or total 0)))
-        (+ (or total 0)
-           (* main-word-score word-multipliers))
+        [(+ (or total 0)
+             (* main-word-score word-multipliers)) 
+         side-words]
 
         nil))))
 
@@ -252,13 +258,14 @@
   (keep (fn [pos]
           ;(println "row hand word pos" row hand word pos touching-letters)
           (when-let [new-hand (can-word-fit-on-row-at-pos? row hand word pos)]
-            (when-let [score (calc-score row word pos touching-letters)]
+            (when-let [[score side-words] (calc-score row word pos touching-letters)]
               (let [score (if (and (every? zero? (vals new-hand))
                                    (= 7 (reduce + (vals hand))))
                             (do (println "BONUS! " word score (+ score 50))
                                 (+ score 50))
                             score)]
                 {:score score
+                 :side-words side-words
                  :row row
                  :pos pos
                  :new-hand new-hand}))))

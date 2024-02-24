@@ -172,7 +172,12 @@
                {:on-click #(! (fn [s] (assoc s :board (get s :old-board))))}
                "REVERT"))
          ($ :div.p5
-            (scrab/check-new-board state))
+            (let [[score side-words] (scrab/check-new-board state)]
+              [($ :div.b "Score = " score)
+               (map-indexed (fn [i w]
+                              ($ :div {:key i}
+                                 ($ :span.b w) " - " ($ :span (get-in @scrab/dictionary [:words w :def]))))
+                            side-words)]))
          ($ :div.flexr.jcsb.w800
             (map-indexed (fn [player-idx p]
                            ($ player {:key player-idx
