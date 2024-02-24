@@ -36,20 +36,52 @@
           {}
           (vec word)))
 
+(defn letter-set [w]
+  (into #{} (map (fn [[l c]]
+                   (keyword (str l c)))
+                 (frequencies w))))
+
+(def letter-group
+  {\J \2 \Q \3 \X \4 \Z \7
+   \W \5 \V \6 \K \7 \F \8
+   \Y \9 \B \2 \H \3 \G \4
+   \M \5 \P \6 \U \7 \D \8
+   \C \9 \L \9 \T \8 \O \7
+   \N \6 \R \5 \A \4 \I \3
+   \S \2 \E \1})
+
 (def dictionary-text-file (atom nil))
 
 (def dictionary 
-  (->> @dictionary-text-file ; (slurp "words_def.txt")
-       str/split-lines
-                    ;(take 1000)
-       (map #(let [[w def] (str/split % #"\t")]
-               [w {:def def
-                   :letter-sums (letter-sums w)
-                   :score (score-letters-face-value w)
-                                ;:freq (get words-freq w)
-                   }]))
-       (into {}) 
-       delay))
+  (-> (->> @dictionary-text-file 
+           str/split-lines
+           (reduce (fn [m b]
+                     (let [[w def] (str/split b #"\t")
+                           l1 (letter-set w)
+                           l2 (->> l1
+                                   (map (comp first name))
+                                   (into #{}))
+                           l3 (->> l2
+                                   (map letter-group)
+                                   (into #{}))]
+                       (-> m
+                           (assoc :words
+                                  (assoc! (get m :words)
+                                          w {:def def
+                                             :letter-sums (letter-sums w)
+                                             :score (score-letters-face-value w)}))
+                           (assoc :index
+                                  (assoc! (get m :index)
+                                          l3
+                                          (assoc-in (get-in m [:index l3] {})
+                                                    [l2 l1]
+                                                    (conj (get-in m [:index l3 l2 l1] [])
+                                                          w)))))))
+                   {:words (transient {})
+                    :index (transient {})}))
+             (update :words persistent!)
+             (update :index persistent!)
+             delay))
 
 (defn can-make? [hand letter-sums]
   (let [num-blanks (get hand \_ 0)
@@ -73,10 +105,7 @@
                      )
               (persistent! new-hand))))))))
 
-(defn letter-set [w]
-  (into #{} (map (fn [[l c]]
-                   (keyword (str l c)))
-                 (frequencies w))))
+
 
 (defn hand-letter-set [hand]
   (into #{} (persistent!
@@ -89,16 +118,9 @@
                      (transient [])
                      (frequencies hand)))))
 
-(def letter-group
-  {\J \2 \Q \3 \X \4 \Z \7
-   \W \5 \V \6 \K \7 \F \8
-   \Y \9 \B \2 \H \3 \G \4
-   \M \5 \P \6 \U \7 \D \8
-   \C \9 \L \9 \T \8 \O \7
-   \N \6 \R \5 \A \4 \I \3 
-   \S \2 \E \1})
 
-(def letter-sets
+
+#_(def letter-sets
   (->> (keys @dictionary)
        (group-by letter-set)
        (group-by (fn [[k v]]
@@ -140,7 +162,9 @@
                              v)
                      l))
                  (transient [])
-                 @letter-sets)
+                 ;@letter-sets
+                 (get @dictionary :index)
+                 )
          persistent!)))
 
 (defn blank? [l]
@@ -181,7 +205,7 @@
       (let [[before after] (nth touching-letters (+ i pos))]
         (when-let [score
                    (or (and (not (or before after)) 0)
-                       (:score (get @dictionary (str before (nth word i) after))))]
+                       (:score (get-in @dictionary [:words (str before (nth word i) after)])))]
           (let [cell (nth row (+ pos i))
                 this-letter-score (get letter-scores (nth word i))
                 score (cond (= cell \≡)
@@ -244,7 +268,7 @@
   (filter (fn [[w {ls :letter-sums}]]
             (when (can-make? tiles ls)
               w))
-          @dictionary))
+          (get @dictionary :words)))
 
 (defn transpose [board]
   (doall
@@ -292,31 +316,35 @@
           best (keep (fn [w]
                        (when-let [ws (seq (word-fits row (letter-sums hand) w touching-letters))]
                          (assoc (apply max-key :score ws)
-                                :word w)))
+                                :word w
+                                :def (get-in @dictionary [:words w :def]))))
                      words)]
-    ;best
-      (when (seq best)
+      best 
+      #_(when (seq best)
         (apply max-key :score best)))))
 
 (defn check-rows [b hand & [transpose?]]
   (let [b (if transpose? (transpose b)
               b)
-        v (map
+        v (mapcat
            (fn [r]
-             (when-let [x (check-row b r hand)]
-               (let [new-row (str (subs (:row x) 0 (:pos x))
-                                  (:word x)
-                                  (subs (:row x) (+ (:pos x) (count (:word x)))))
-                     new-board (assoc b r new-row)
-                     new-board (if transpose? (transpose new-board)
-                                   new-board)]
-                 (assoc x
-                        :row-idx r
-                        :new-row new-row
-                        :new-board new-board))))
+             (when-let [v (check-row b r hand)]
+               (map (fn [x]
+                      (let [new-row (str (subs (:row x) 0 (:pos x))
+                                         (:word x)
+                                         (subs (:row x) (+ (:pos x) (count (:word x)))))
+                            new-board (assoc b r new-row)
+                            new-board (if transpose? (transpose new-board)
+                                          new-board)]
+                        (assoc x
+                               :row-idx r
+                               :new-row new-row
+                               :new-board new-board)))
+                    v)))
            (range 15))
         v (remove nil? v)]
-    (when (seq v)
+    (seq v)
+    #_(when (seq v)
       (apply max-key :score v))))
 
 (defn best-play [b hand]
@@ -325,7 +353,12 @@
         v (seq (remove nil? v))
         bp (when v
              (apply max-key :score v))] 
-    (assoc bp :def (:def (get @dictionary (:word bp))))))
+    (assoc bp :def (:def (get-in @dictionary [:words (:word bp)])))))
+
+(defn all-plays [b hand]
+  (sort-by :score >
+           (concat (check-rows b hand)
+                   (check-rows b hand true))))
 
 (def full-bag [;1  2  3  4  5  6  7  8  9  
                \A \A \A \A \A \A \A \A \A
@@ -369,10 +402,7 @@
                   
                   :board board}))
 
-(-> (.fetch js/window (str (.-URL js/document) "dictionary.txt"))
-    (.then #(.text %))
-    (.then #(do (reset! dictionary-text-file %)
-                (def go (count @letter-sets)))))
+
 
 (comment
   (do
@@ -392,3 +422,168 @@
      (swap! state play :player-4)))
   )
 
+
+(def new-state
+  {:board board
+   :old-board board
+   :current-player 0
+   :players [{:name "Player 1"
+              :selected 0
+              :hand "       "}
+             {:name "Player 2"
+              :selected 0
+              :hand "       "}]
+   :selected [7 7 nil]})
+
+(defn replace-nth-char [s n new-char]
+  (when s
+    (let [before (subs s 0 n)
+          after (subs s (inc n))]
+      (str before new-char after))))
+
+(defn remaining-letters [state]
+  (let [board (get state :board)
+        player-hands (apply str (map :hand (:players state)))]
+    (->> (str/replace (apply str player-hands board) #"[^A-Za-z_]" "")
+         (reduce (fn [bag l]
+                   (str/replace-first bag (re-pattern l) ""))
+                 (apply str full-bag)))))
+
+(defn board-handle-key [k state]
+  (cond (= k "ArrowLeft")
+        (update state :selected
+                (fn [s] (let [[sel-col sel-row vert] s]
+                          [(dec sel-col) sel-row vert])))
+        (= k "ArrowRight")
+        (update state :selected
+                (fn [s] (let [[sel-col sel-row vert] s]
+                          [(inc sel-col) sel-row vert])))
+        (= k "ArrowUp")
+        (update state :selected
+                (fn [s] (let [[sel-col sel-row vert] s]
+                          [sel-col (dec sel-row) vert])))
+        (= k "ArrowDown")
+        (update state :selected
+                (fn [s] (let [[sel-col sel-row vert] s]
+                          [sel-col (inc sel-row) vert])))
+        (re-matches #"[A-Za-z ]" k)
+        (let [k (str/upper-case k)
+              [col-idx row-idx vert] (:selected state)
+              p-idx (:current-player state)]
+          (-> (if (neg? p-idx)
+                state
+                (update-in state [:players p-idx :hand]
+                           (fn [h]
+                             (str/replace-first h (re-pattern k) " "))))
+              (update-in [:board row-idx]
+                         (fn [r]
+                           (if (= " " k)
+                             (replace-nth-char r col-idx (get-in board [col-idx row-idx]))
+                             (replace-nth-char r col-idx k))))))
+        (= k "Backspace")
+        (let [[col-idx row-idx vert] (:selected state)]
+          (update-in state [:board row-idx]
+                     (fn [r]
+                       (replace-nth-char r col-idx (get-in board [col-idx row-idx])))))
+
+        :else state))
+
+(defn player-handle-key [k player-idx state]
+  (cond (= k "ArrowLeft")
+        (update-in state [:players player-idx :selected]
+                   (fn [s] (dec s)))
+        (= k "ArrowRight")
+        (update-in state [:players player-idx :selected]
+                   (fn [s] (inc s)))
+        (re-matches #"[A-Za-z ]" k)
+        (let [selected (get-in state [:players player-idx :selected])]
+          (-> (update-in state [:players player-idx :hand]
+                         (fn [r]
+                           (if (= " " k)
+                             (replace-nth-char r selected " ")
+                             (replace-nth-char r selected (str/upper-case k)))))
+              (update-in [:players player-idx :selected]
+                         (fn [s] (inc s)))))
+        (= k "Backspace")
+        (let [selected (get-in state [:players player-idx :selected])]
+          (-> (update-in state [:players player-idx :hand]
+                         (fn [r]
+                           (replace-nth-char r (dec selected) " ")))
+              (update-in [:players player-idx :selected]
+                         (fn [s] (dec s)))))
+        :else state))
+
+(defn bag-fill-hand [state]
+  (let [p-idx (get state :current-player)
+        remaining (shuffle (remaining-letters state))
+        h (get-in state [:players p-idx :hand])
+        h (subs (str h "       ") 0 7)
+        new-h (first (reduce (fn [[s rem] l]
+                               (if (= l " ")
+                                 [(str s (nth rem 0 " ")) (rest rem)]
+                                 [(str s l) rem]))
+                             ["" remaining]
+                             h))]
+    (assoc-in state [:players p-idx :hand] new-h)))
+
+(defn bag-click-letter [k state]
+  (if (re-matches #"[A-Za-z ]" k)
+    (let [k (str/upper-case k)
+          [col-idx row-idx _] (:selected state)
+          p-idx (:current-player state)]
+      (-> (if (neg? p-idx)
+            (update-in state [:board row-idx]
+                       (fn [r]
+                         (if (= " " k)
+                           (replace-nth-char r col-idx (get-in board [col-idx row-idx]))
+                           (replace-nth-char r col-idx k))))
+            (update-in state [:players p-idx :hand]
+                       (fn [h]
+                         (println h)
+                         (str/replace-first h #" " k))))
+
+          #_(update :selected (fn [s] (let [[sel-col sel-row vert] s]
+                                      (if vert
+                                        [sel-col (inc sel-row) vert]
+                                        [(inc sel-col) sel-row vert]))))))
+    state))
+
+(defn player-click-letter [k state]
+  (if (re-matches #"[A-Za-z]" k)
+    (let [k (str/upper-case k)
+          [col-idx row-idx _] (:selected state)
+          p-idx (:current-player state)]
+      (-> (update-in state [:board row-idx]
+                     (fn [r] (replace-nth-char r col-idx k)))
+          (update-in [:players p-idx :hand]
+                     (fn [h] (str/replace-first (or h "       ") (re-pattern k) " ")))
+
+          #_(update :selected (fn [s] (let [[sel-col sel-row vert] s]
+                                        (if vert
+                                          [sel-col (inc sel-row) vert]
+                                          [(inc sel-col) sel-row vert]))))))
+    state))
+
+(defn check-new-board' [old-board board]
+  (let [different-rows (keep-indexed (fn [idx r]
+                                       (when (not= r (nth old-board idx))
+                                         idx))
+                                     board)]
+    (when (= 1 (count different-rows))
+      (let [r (first different-rows)
+            [x w] (reduce (fn [[idx w found] l]
+                            (if (re-matches #"[A-Za-z]" l)
+                              [(inc idx) (str w l) (or found (re-matches #"[^A-Za-z]" (nth (nth old-board r) idx)))]
+                              (if found
+                                (reduced [idx w])
+                                [(inc idx) "" false])))
+                          [0 "" false]
+                          (nth board r))]
+        (when-let [score (and (get-in @dictionary [:words w])
+                              (check-row-word old-board r w (- x (count w))))]
+          score)))))
+
+(defn check-new-board [state]
+  (let [{:keys [board old-board]} state]
+    (or (check-new-board' old-board board)
+        (check-new-board' (transpose old-board) (transpose board)))))

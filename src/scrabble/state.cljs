@@ -1,8 +1,6 @@
 (ns scrabble.state
   (:require
-   [uix.core :as uix :refer [defui $]]
    [scrabble.scrabble :as scrab]
-   [uix.dom]
    [cljs.pprint :refer [pprint]]
    [clojure.string :as str]))
 
@@ -55,31 +53,37 @@
         (let [k (str/upper-case k)
               [col-idx row-idx vert] (:selected state)
               p-idx (:current-player state)
-              source (if (= p-idx -1)
+              #_#_source (if (= p-idx -1)
                        (remaining-letters state)
                        (get-in state [:players p-idx :hand]))]
-          (if (or (str/includes? source k) (neg? p-idx))
-            (-> (if (neg? p-idx)
+          (update-in state [:board row-idx]
+                     (fn [r]
+                       (if (= " " k)
+                         (replace-nth-char r col-idx (get-in scrab/board [col-idx row-idx]))
+                         (replace-nth-char r col-idx k))))
+          #_(if (or (str/includes? source k) (neg? p-idx))
+            (-> #_(if (neg? p-idx)
                   state
                   (update-in state [:players p-idx :hand]
                              (fn [h]
                                (str/replace-first h (re-pattern k) " "))))
+                state
                 (update-in [:board row-idx]
                            (fn [r]
                              (if (= " " k)
                                (replace-nth-char r col-idx (get-in scrab/board [col-idx row-idx]))
                                (replace-nth-char r col-idx k))))
-                (update :selected (fn [s] (let [[sel-col sel-row vert] s]
+                #_(update :selected (fn [s] (let [[sel-col sel-row vert] s]
                                             (if vert
                                               [sel-col (inc sel-row) vert]
                                               [(inc sel-col) sel-row vert])))))
             state))
         (= k "Backspace")
         (let [[col-idx row-idx vert] (:selected state)
-              col-idx (if vert col-idx (dec col-idx))
-              row-idx (if vert (dec row-idx) row-idx)
-              p-idx (:current-player state)]
-          (-> (if (neg? p-idx) state
+              ;col-idx (if vert col-idx (dec col-idx))
+              ;row-idx (if vert (dec row-idx) row-idx)
+              #_#_p-idx (:current-player state)]
+          (-> #_(if (neg? p-idx) state
                   (update-in state [:players p-idx :hand]
                              (fn [h]
                                (if-let [s (re-matches #"[A-Za-z_]"
@@ -87,10 +91,11 @@
                                  (subs (str/replace-first (str h " ") #" " s)
                                        0 7)
                                  h))))
+              state
               (update-in [:board row-idx]
                          (fn [r]
                            (replace-nth-char r col-idx (get-in scrab/board [col-idx row-idx]))))
-              (update :selected (fn [s] (let [[sel-col sel-row vert] s]
+              #_(update :selected (fn [s] (let [[sel-col sel-row vert] s]
                                           (if vert
                                             [sel-col (dec sel-row) vert]
                                             [(dec sel-col) sel-row vert]))))))

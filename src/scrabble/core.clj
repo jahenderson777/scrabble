@@ -49,7 +49,7 @@
                              [(str/upper-case w) (parse-long f)]))
                      (into {})))
 
-(def words-def (->> (slurp "words_def.txt")
+(def words-def (->> (slurp "docs/dictionary.txt")
                     str/split-lines
                     ;(take 1000)
                     (map #(let [[w def] (str/split % #"\t")]
@@ -59,6 +59,38 @@
                                 :freq (get words-freq w)}]))
 
                     (into {})))
+
+(spit "dict.edn"
+      (pr-str
+       (-> (->> (slurp "docs/dictionary.txt")
+                str/split-lines
+                (reduce (fn [m b]
+                          (let [[w def] (str/split b #"\t")
+                                l1 (letter-set w)
+                                l2 (->> l1
+                                        (map (comp first name))
+                                        (into #{}))
+                                l3 (->> l2
+                                        (map letter-group)
+                                        (into #{}))]
+                            (-> m
+                                (assoc :words
+                                       (assoc! (get m :words)
+                                               w {:def def
+                                                  :letter-sums (letter-sums w)
+                                                  :score (score-letters-face-value w)}))
+                                (assoc :index
+                                       (assoc! (get m :index)
+                                               l3
+                                               (assoc-in (get-in m [:index l3] {})
+                                                         [l2 l1]
+                                                         (conj (get-in m [:index l3 l2 l1] [])
+                                                               w)))))))
+                        {:words (transient {})
+                         :index (transient {})}))
+           (update :words persistent!)
+           (update :index persistent!)
+           )))
 
 
 (reverse (sort-by #(:freq (second %)) (vec words-def)))
@@ -119,8 +151,9 @@
 
 
 (defn letter-set [w]
-  (into #{} (map (fn [[l c]]
-                  (keyword (str l c))) 
+  (into #{} (keep (fn [[l c]]
+                    (when (> c 1)
+                      (keyword (str l c)))) 
                  (frequencies w))))
 
 (defn hand-letter-set [hand]
@@ -158,24 +191,63 @@
    \N \6
    \R \5
    \A \4
-   \I \3`
+   \I \3 
    \S \2
    \E \1})
 
 ;(frequencies (map letter-group (apply str  (keys words-def))))
 
+(def ks (keys words-def))
+
+(def cks (group-by count ks))
+(count (get cks 11))
+
+(time (->> ks
+           (group-by letter-set)))
+
+(defn assoc-in! [m [k & ks] v]
+  (if ks
+    (assoc! m k (assoc-in! (get m k) ks v))
+    (assoc! m k v)))
+
+(def letter-sets2
+  (time (->> ks
+            (reduce (fn [m w]
+                      (assoc-in m [(fn [[k v]]
+                                      (->> k
+                                           (map letter-group)
+                                           (into #{})))
+                                    (fn [[k v]]
+                                      (->> k
+                                           (map (comp first name))
+                                           (into #{})))
+                                    letter-set]
+                                 w))
+                    {})
+            )))
+
+
+
+(persistent!
+ (let [m (transient {})]
+   (assoc! m :a (assoc (get m :a {}) :b 2))))
+
 (def letter-sets
-  (->> (keys words-def)
+  (time (->> ks
        ;(take 1000)
-       (group-by letter-set)
-       (group-by (fn [[k v]]
-                   (->> k
-                        (map (comp first name))
-                        (into #{}))))
-       (group-by (fn [[k v]]
-                   (->> k
-                        (map letter-group)
-                        (into #{}))))))
+             (group-by letter-set)
+             (group-by (fn [[k v]]
+                         (->> k
+                              (map (comp first name))
+                              (into #{}))))
+             (group-by (fn [[k v]]
+                         (->> k
+                              (map letter-group)
+                              (into #{})))))))
+
+(comment
+(spit "word-index.edn" (pr-str letter-sets))
+1)
 
 
 (defn find-words [hand]
